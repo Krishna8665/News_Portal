@@ -7,6 +7,9 @@ connectDB();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+//Routes Here
+const authRoute = require("./routes/authRoutes");
+app.use("", authRoute);
 
 //port--
 const port = envConfig.portNumber || 4000;
