@@ -1,32 +1,58 @@
-// controllers/news.controller.js
-const News = require("../models/News");
+const News = require("../models/newsModel");
 
-// Admin creates draft
+/* CREATE DRAFT */
 exports.createNews = async (req, res) => {
-  const news = await News.create({
-    title: req.body.title,
-    description: req.body.description,
-    category: req.body.category,
-    image: req.file?.filename,
-    isPublished: false,
-  });
-  res.status(201).json({ message: "Saved as draft", news });
+  try {
+    const news = await News.create({
+      title: req.body.title,
+      description: req.body.description,
+      category: req.body.category,
+      image: req.file?.filename,
+      isPublished: false,
+    });
+
+    res.status(201).json({ message: "Saved as draft", news });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
-// Admin publishes news
+/* PUBLISH */
 exports.publishNews = async (req, res) => {
-  const news = await News.findById(req.params.id);
-  news.isPublished = true;
-  await news.save();
-  res.json({ message: "News published" });
+  try {
+    const news = await News.findById(req.params.id);
+    if (!news) {
+      return res.status(404).json({ message: "News not found" });
+    }
+
+    news.isPublished = true;
+    await news.save();
+
+    res.json({ message: "News published" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
-// User feed
+/* USER FEED */
 exports.getPublishedNews = async (req, res) => {
-  res.json(await News.find({ isPublished: true }).populate("category"));
+  try {
+    res.json(await News.find({ isPublished: true }).populate("category"));
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
-// Single news
+/* SINGLE NEWS */
 exports.getSingleNews = async (req, res) => {
-  res.json(await News.findOne({ slug: req.params.slug, isPublished: true }));
+  try {
+    res.json(
+      await News.findOne({
+        slug: req.params.slug,
+        isPublished: true,
+      })
+    );
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };

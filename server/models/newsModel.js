@@ -1,4 +1,4 @@
-/ models/News.js
+// models/News.js
 const mongoose = require('mongoose');
 const slugify = require('../utils/slugify');
 

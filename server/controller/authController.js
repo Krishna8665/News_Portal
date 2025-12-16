@@ -7,10 +7,10 @@ exports.registerUser = async (req, res) => {
   const { email, password, username } = req.body;
   if (!email || !password || !username) {
     return res.status(400).json({
-      message: "Please provide email,password,phoneNumber",
+      message: "Please provide email,password",
     });
   } //else
-  const userFound = await User.find({ userEmail: email });
+  const userFound = await User.findOne({ userEmail: email });
   if (userFound.length > 0) {
     return res.status(400).json({
       message: "USer with that email already registered",
@@ -31,11 +31,11 @@ exports.registerUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    res.status(400).json({
+    return res.status(400).json({
       message: "Please provide email,password",
     });
   }
-  const userFound = await User.find({ userEmail: email });
+  const userFound = await User.findOne({ userEmail: email });
   if (userFound.length == 0) {
     return res.status(400).json({
       message: "USer with that email is not registered",

@@ -1,5 +1,8 @@
 const express = require("express");
+require("events").EventEmitter.defaultMaxListeners = 20;
+
 const envConfig = require("./config/config");
+const path = require("path");
 const connectDB = require("./config/connectDB");
 const app = express();
 require("dotenv");
@@ -10,9 +13,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 //Routes Here
 const authRoute = require("./routes/authRoutes");
+const category = require("./routes/categoryRoutes");
+const news = require("./routes/newsRoute");
 app.use("", authRoute);
-app.use("/categories", require("./routes/category.routes"));
-app.use("/news", require("./routes/news.routes"));
+app.use("/categories", category);
+app.use("/news", news);
 
 //port--
 const port = envConfig.portNumber || 4000;
