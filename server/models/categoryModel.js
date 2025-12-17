@@ -1,17 +1,18 @@
-// models/Category.js
 const mongoose = require("mongoose");
-const slugify = require("../utils/slugify");
+const slugify = require("slugify");
 
 const categorySchema = new mongoose.Schema(
   {
-    name: { type: String, unique: true },
-    slug: String,
+    name: { type: String, unique: true, required: true },
+    slug: { type: String, unique: true },
   },
   { timestamps: true }
 );
 
-categorySchema.pre("save", function () {
-  this.slug = slugify(this.name);
+categorySchema.pre("save", async function () {
+  if (this.isModified("name")) {
+    this.slug = slugify(this.name, { lower: true });
+  }
 });
 
 module.exports = mongoose.model("Category", categorySchema);

@@ -7,7 +7,8 @@ exports.createCategory = async (req, res) => {
     }
 
     const category = await Category.create({ name: req.body.name });
-    res.status(201).json(category);
+    console.log("Admin user creating category:", req.user.userName);
+    res.status(201).json({ message: "Category created!", user: req.user });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

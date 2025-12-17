@@ -10,7 +10,7 @@ exports.registerUser = async (req, res) => {
       message: "Please provide email,password",
     });
   } //else
-  const userFound = await User.findOne({ userEmail: email });
+  const userFound = await User.find({ userEmail: email });
   if (userFound.length > 0) {
     return res.status(400).json({
       message: "USer with that email already registered",
@@ -35,7 +35,7 @@ exports.loginUser = async (req, res) => {
       message: "Please provide email,password",
     });
   }
-  const userFound = await User.findOne({ userEmail: email });
+  const userFound = await User.find({ userEmail: email });
   if (userFound.length == 0) {
     return res.status(400).json({
       message: "USer with that email is not registered",

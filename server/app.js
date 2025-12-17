@@ -19,6 +19,7 @@ app.use("", authRoute);
 app.use("/categories", category);
 app.use("/news", news);
 
+
 //port--
 const port = envConfig.portNumber || 4000;
 app.listen(port, () => {

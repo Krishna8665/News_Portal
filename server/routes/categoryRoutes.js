@@ -1,13 +1,13 @@
 const router = require("express").Router();
-const auth = require("../middleware/admin.middleware");
-const admin = require("../middleware/admin.middleware");
+const authMiddleware = require("../middleware/auth.middleware");
+const adminMiddleware = require("../middleware/admin.middleware");
 const {
   getCategories,
   createCategory,
 } = require("../controller/catergoryController");
 
 router.get("/", getCategories);
-router.post("/", auth, admin, createCategory);
-module.exports = router;
 
-router.get;
+router.post("/", authMiddleware, adminMiddleware, createCategory);
+
+module.exports = router;

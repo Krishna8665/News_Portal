@@ -1,6 +1,13 @@
-// middlewares/admin.middleware.js
-module.exports = (req, res, next) => {
-  if (req.user.role !== "admin")
-    return res.status(403).json({ message: "Admin only" });
+const adminMiddleware = (req, res, next) => {
+  console.log("REQ.USER:", req.user);
+  console.log("REQ.USER ROLE:", req.user?.role);
+  console.log("typeof next:", typeof next);
+
+  if (!req.user || req.user.role !== "admin") {
+    return res.status(403).json({ message: "Access denied. Admin only." });
+  }
+
   next();
 };
+
+module.exports = adminMiddleware;
