@@ -1,6 +1,6 @@
 const News = require("../models/newsModel");
 
-/* CREATE DRAFT */
+//CREATE DRAFT 
 exports.createNews = async (req, res) => {
   try {
     const news = await News.create({
@@ -17,7 +17,7 @@ exports.createNews = async (req, res) => {
   }
 };
 
-/* PUBLISH */
+//PUBLISH 
 exports.publishNews = async (req, res) => {
   try {
     const news = await News.findById(req.params.id);
@@ -34,7 +34,7 @@ exports.publishNews = async (req, res) => {
   }
 };
 
-/* USER FEED */
+//USER FEED 
 exports.getPublishedNews = async (req, res) => {
   try {
     res.json(await News.find({ isPublished: true }).populate("category"));
@@ -43,7 +43,7 @@ exports.getPublishedNews = async (req, res) => {
   }
 };
 
-/* SINGLE NEWS */
+//SINGLE NEWS 
 exports.getSingleNews = async (req, res) => {
   try {
     res.json(
