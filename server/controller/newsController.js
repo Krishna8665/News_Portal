@@ -69,3 +69,17 @@ exports.getSingleNews = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// controller/newsController.js
+
+// DELETE NEWS
+exports.deleteNews = async (req, res) => {
+  try {
+    const news = await News.findByIdAndDelete(req.params.id);
+    if (!news) return res.status(404).json({ message: "News not found" });
+
+    res.json({ message: "News deleted" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

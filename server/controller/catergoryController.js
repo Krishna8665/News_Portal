@@ -8,7 +8,9 @@ exports.createCategory = async (req, res) => {
 
     const category = await Category.create({ name: req.body.name });
     console.log("Admin user creating category:", req.user.userName);
-    res.status(201).json({ message: "Category created!", user: req.user });
+
+    // Return the created category so frontend can update state
+    res.status(201).json(category);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

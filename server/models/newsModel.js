@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const slugify = require("slugify");
+const { slugify: transSlugify } = require("transliteration");
 
 const newsSchema = new mongoose.Schema(
   {
@@ -14,15 +14,10 @@ const newsSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Generate slug automatically
+// Generate slug automatically in English
 newsSchema.pre("save", function (next) {
   if (this.isModified("title")) {
-    this.slug = slugify(this.title, {
-      lower: true,
-      strict: true,
-      trim: true,
-      locale: "en",
-    });
+    this.slug = transSlugify(this.title).toLowerCase();
   }
 });
 
