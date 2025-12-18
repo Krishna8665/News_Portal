@@ -7,10 +7,13 @@ const {
   getSingleNews,
   createNews,
   publishNews,
+  getDraftNews,
 } = require("../controller/newsController");
 
 router.get("/", getPublishedNews);
-router.get("/:slug", getSingleNews);
+router.get("/drafts", auth, admin, getDraftNews);
+
+router.get("/news/:year/:month/:slug", getSingleNews);
 router.post("/", auth, admin, upload.single("image"), createNews);
 router.patch("/:id/publish", auth, admin, publishNews);
 

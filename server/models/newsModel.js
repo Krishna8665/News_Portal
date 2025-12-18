@@ -1,14 +1,18 @@
 const mongoose = require("mongoose");
 const slugify = require("slugify");
 
-const newsSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  description: { type: String },
-  category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
-  image: { type: String },
-  slug: { type: String, unique: true },
-  isPublished: { type: Boolean, default: false },
-}, { timestamps: true });
+const newsSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true },
+    description: { type: String },
+    category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
+    image: { type: String },
+    slug: { type: String, unique: true },
+    isPublished: { type: Boolean, default: false },
+    publishedAt: Date,
+  },
+  { timestamps: true }
+);
 
 // Generate slug automatically
 newsSchema.pre("save", function (next) {
@@ -17,10 +21,9 @@ newsSchema.pre("save", function (next) {
       lower: true,
       strict: true,
       trim: true,
-      locale: "en"
+      locale: "en",
     });
   }
-  next();
 });
 
 module.exports = mongoose.model("News", newsSchema);

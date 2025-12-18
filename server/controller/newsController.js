@@ -1,6 +1,6 @@
 const News = require("../models/newsModel");
 
-//CREATE DRAFT 
+//CREATE DRAFT
 exports.createNews = async (req, res) => {
   try {
     const news = await News.create({
@@ -16,8 +16,20 @@ exports.createNews = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+// GET DRAFT NEWS (ADMIN)
+exports.getDraftNews = async (req, res) => {
+  try {
+    const drafts = await News.find({ isPublished: false })
+      .populate("category")
+      .sort({ createdAt: -1 });
 
-//PUBLISH 
+    res.json(drafts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+//PUBLISH
 exports.publishNews = async (req, res) => {
   try {
     const news = await News.findById(req.params.id);
@@ -26,6 +38,7 @@ exports.publishNews = async (req, res) => {
     }
 
     news.isPublished = true;
+    news.publishedAt = new Date();
     await news.save();
 
     res.json({ message: "News published" });
@@ -34,7 +47,7 @@ exports.publishNews = async (req, res) => {
   }
 };
 
-//USER FEED 
+//USER FEED
 exports.getPublishedNews = async (req, res) => {
   try {
     res.json(await News.find({ isPublished: true }).populate("category"));
@@ -43,7 +56,7 @@ exports.getPublishedNews = async (req, res) => {
   }
 };
 
-//SINGLE NEWS 
+//SINGLE NEWS
 exports.getSingleNews = async (req, res) => {
   try {
     res.json(
