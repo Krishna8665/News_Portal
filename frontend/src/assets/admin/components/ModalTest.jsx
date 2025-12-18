@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+import { useState, useEffect } from "react";
 const SimpleModal = ({ isOpen, onClose, modalType }) => {
   if (!isOpen) return null;
 

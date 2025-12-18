@@ -1,44 +1,77 @@
-import React, { useState } from "react";
+import { Upload } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const Modal = ({
-  modalType,
-  closeModal,
-  onCategoryCreate,
-  onNewsCreate,
-  editingNews,
-}) => {
+const Modal = ({ modalType, closeModal, editingNews }) => {
   const [newCategory, setNewCategory] = useState("");
+
   const [newsData, setNewsData] = useState({
     title: editingNews?.title || "",
     content: editingNews?.content || "",
     category: editingNews?.category || "",
-    imageUrl: editingNews?.imageUrl || "",
+    image: null,
+    imagePreview: null, // preview URL
   });
 
-  const handleCategorySubmit = (e) => {
-    e.preventDefault();
-    onCategoryCreate(newCategory);
-    setNewCategory("");
-    closeModal();
-  };
+  const [categories, setCategories] = useState([]);
 
-  const handleNewsSubmit = (e) => {
-    e.preventDefault();
-    if (onNewsCreate) {
-      onNewsCreate(newsData);
-    }
-    setNewsData({ title: "", content: "", category: "", imageUrl: "" });
-    closeModal();
-  };
+  // Set token for axios requests
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  }, []);
 
   const handleNewsChange = (field, value) => {
     setNewsData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      closeModal();
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setNewsData((prev) => ({
+        ...prev,
+        image: file,
+        imagePreview: URL.createObjectURL(file),
+      }));
     }
+  };
+
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get("http://localhost:3000/categories");
+        setCategories(res.data);
+      } catch (error) {
+        console.error("Failed to fetch categories", error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  const handleNewsSubmit = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("title", newsData.title);
+      formData.append("description", newsData.content);
+      formData.append("category", newsData.category);
+      if (newsData.image) formData.append("image", newsData.image);
+
+      await axios.post("http://localhost:3000/news", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      alert("Draft created successfully!");
+      setNewsData({ title: "", content: "", category: "", image: null, imagePreview: null });
+      closeModal();
+    } catch (error) {
+      console.error("Failed to create draft:", error);
+      alert("Failed to create draft");
+    }
+  };
+
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) closeModal();
   };
 
   return (
@@ -64,6 +97,7 @@ const Modal = ({
           </button>
         </div>
 
+        {/* Category Form */}
         {modalType === "category" && (
           <div className="space-y-4">
             <input
@@ -72,19 +106,15 @@ const Modal = ({
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
               className="w-full p-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  if (newCategory.trim()) {
-                    onCategoryCreate(newCategory);
-                    setNewCategory("");
-                    closeModal();
-                  }
-                }
-              }}
             />
             <button
-              onClick={handleCategorySubmit}
+              onClick={() => {
+                if (newCategory.trim()) {
+                  alert(`Category "${newCategory}" created!`);
+                  setNewCategory("");
+                  closeModal();
+                }
+              }}
               className="bg-blue-600 text-white w-full py-2 rounded-md hover:bg-blue-700 transition"
             >
               Create Category
@@ -92,61 +122,58 @@ const Modal = ({
           </div>
         )}
 
+        {/* News Form */}
         {modalType === "news" && (
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Title
-              </label>
-              <input
-                type="text"
-                placeholder="Enter news title"
-                value={newsData.title}
-                onChange={(e) => handleNewsChange("title", e.target.value)}
-                className="w-full p-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
+            <input
+              type="text"
+              placeholder="Title"
+              value={newsData.title}
+              onChange={(e) => handleNewsChange("title", e.target.value)}
+              className="w-full p-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <textarea
+              placeholder="Content"
+              value={newsData.content}
+              onChange={(e) => handleNewsChange("content", e.target.value)}
+              className="w-full p-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+            />
+            <select
+              value={newsData.category}
+              onChange={(e) => handleNewsChange("category", e.target.value)}
+              className="w-full p-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select category</option>
+              {categories.map((cat) => (
+                <option key={cat._id} value={cat._id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Content
-              </label>
-              <textarea
-                placeholder="Enter news content"
-                value={newsData.content}
-                onChange={(e) => handleNewsChange("content", e.target.value)}
-                className="w-full p-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px] resize-none"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category
-              </label>
+            {/* Image Upload */}
+            <label className="cursor-pointer">
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors h-40 flex flex-col items-center justify-center">
+                {newsData.imagePreview ? (
+                  <img
+                    src={newsData.imagePreview}
+                    alt="preview"
+                    className="h-full object-contain"
+                  />
+                ) : (
+                  <>
+                    <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                    <p className="text-sm text-gray-600">Click to upload</p>
+                  </>
+                )}
+              </div>
               <input
-                type="text"
-                placeholder="Enter category"
-                value={newsData.category}
-                onChange={(e) => handleNewsChange("category", e.target.value)}
-                className="w-full p-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={handleImageChange}
               />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Image URL (optional)
-              </label>
-              <input
-                type="text"
-                placeholder="Enter image URL"
-                value={newsData.imageUrl}
-                onChange={(e) => handleNewsChange("imageUrl", e.target.value)}
-                className="w-full p-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            </label>
 
             <button
               onClick={handleNewsSubmit}
