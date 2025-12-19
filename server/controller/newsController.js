@@ -29,7 +29,7 @@ exports.getDraftNews = async (req, res) => {
   }
 };
 
-//PUBLISH
+//PUBLISH Draft-> News
 exports.publishNews = async (req, res) => {
   try {
     const news = await News.findByIdAndUpdate(
@@ -47,7 +47,7 @@ exports.publishNews = async (req, res) => {
   }
 };
 
-//USER FEED
+//USER FEED-Get News
 exports.getPublishedNews = async (req, res) => {
   try {
     res.json(await News.find({ isPublished: true }).populate("category"));
@@ -69,8 +69,6 @@ exports.getSingleNews = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-// controller/newsController.js
 
 // DELETE NEWS
 exports.deleteNews = async (req, res) => {

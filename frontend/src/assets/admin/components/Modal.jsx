@@ -82,35 +82,31 @@ const Modal = ({ modalType, closeModal, editingNews, onSuccess }) => {
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) closeModal();
   };
-  const handleCategorySubmit = async () => {
-    if (!newCategory.trim()) return;
+const handleCategorySubmit = async () => {
+  if (!newCategory.trim()) return;
 
-    try {
-      const res = await axios.post("http://localhost:3000/categories", {
-        name: newCategory,
-      });
+  try {
+    const res = await axios.post("http://localhost:3000/categories", {
+      name: newCategory,
+    });
 
-      toast.success(`Category "${res.data.name}" created successfully!`, {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+    toast.success(`Category "${res.data.name}" created successfully!`, {
+      position: "top-right",
+      autoClose: 3000,
+    });
 
-      setNewCategory("");
-      closeModal();
-      // Optionally refresh categories list if needed
-      // fetchCategories();
-    } catch (error) {
-      console.error("Failed to create category:", error.response || error);
-      toast.error(
-        error.response?.data?.message || "Failed to create category",
-        { position: "top-right", autoClose: 3000 }
-      );
-    }
-  };
+    setNewCategory("");
+    closeModal();
+
+    // Optionally refresh categories list in parent
+    // onSuccess?.(); 
+  } catch (error) {
+    toast.error(
+      error.response?.data?.message || "Failed to create category",
+      { position: "top-right", autoClose: 3000 }
+    );
+  }
+};
 
   return (
     <div
@@ -118,6 +114,7 @@ const Modal = ({ modalType, closeModal, editingNews, onSuccess }) => {
       style={{ backgroundColor: "rgba(0, 0, 0, 0.05)" }}
       onClick={handleBackdropClick}
     >
+      <ToastContainer />
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 m-4">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-bold">
