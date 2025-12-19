@@ -82,31 +82,33 @@ const Modal = ({ modalType, closeModal, editingNews, onSuccess }) => {
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) closeModal();
   };
-const handleCategorySubmit = async () => {
-  if (!newCategory.trim()) return;
+  const handleCategorySubmit = async () => {
+    if (!newCategory.trim()) return;
 
-  try {
-    const res = await axios.post("http://localhost:3000/categories", {
-      name: newCategory,
-    });
+    try {
+      const res = await axios.post("http://localhost:3000/categories", {
+        name: newCategory,
+      });
 
-    toast.success(`Category "${res.data.name}" created successfully!`, {
-      position: "top-right",
-      autoClose: 3000,
-    });
+      toast.success(`Category "${res.data.name}" created successfully!`, {
+        position: "top-right",
+        autoClose: 3000,
+      });
 
-    setNewCategory("");
-    closeModal();
-
-    // Optionally refresh categories list in parent
-    // onSuccess?.(); 
-  } catch (error) {
-    toast.error(
-      error.response?.data?.message || "Failed to create category",
-      { position: "top-right", autoClose: 3000 }
-    );
-  }
-};
+      setNewCategory("");
+      closeModal();
+      await fetchCategories();
+      // Also notify parent (CategoriesPage) to update state if needed
+      onCategoryCreated?.(res.data);
+      // Optionally refresh categories list in parent
+      // onSuccess?.();
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Failed to create category",
+        { position: "top-right", autoClose: 3000 }
+      );
+    }
+  };
 
   return (
     <div
