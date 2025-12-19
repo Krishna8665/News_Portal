@@ -1,8 +1,10 @@
 import { Upload } from "lucide-react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const Modal = ({ modalType, closeModal, editingNews }) => {
+const Modal = ({ modalType, closeModal, editingNews, onSuccess }) => {
   const [newCategory, setNewCategory] = useState("");
 
   const [newsData, setNewsData] = useState({
@@ -18,7 +20,8 @@ const Modal = ({ modalType, closeModal, editingNews }) => {
   // Set token for axios requests
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    if (token)
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   }, []);
 
   const handleNewsChange = (field, value) => {
@@ -60,9 +63,15 @@ const Modal = ({ modalType, closeModal, editingNews }) => {
       await axios.post("http://localhost:3000/news", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
       alert("Draft created successfully!");
-      setNewsData({ title: "", content: "", category: "", image: null, imagePreview: null });
+      setNewsData({
+        title: "",
+        content: "",
+        category: "",
+        image: null,
+        imagePreview: null,
+      });
+      onSuccess();
       closeModal();
     } catch (error) {
       console.error("Failed to create draft:", error);
@@ -72,6 +81,35 @@ const Modal = ({ modalType, closeModal, editingNews }) => {
 
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) closeModal();
+  };
+  const handleCategorySubmit = async () => {
+    if (!newCategory.trim()) return;
+
+    try {
+      const res = await axios.post("http://localhost:3000/categories", {
+        name: newCategory,
+      });
+
+      toast.success(`Category "${res.data.name}" created successfully!`, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+
+      setNewCategory("");
+      closeModal();
+      // Optionally refresh categories list if needed
+      // fetchCategories();
+    } catch (error) {
+      console.error("Failed to create category:", error.response || error);
+      toast.error(
+        error.response?.data?.message || "Failed to create category",
+        { position: "top-right", autoClose: 3000 }
+      );
+    }
   };
 
   return (
@@ -108,13 +146,7 @@ const Modal = ({ modalType, closeModal, editingNews }) => {
               className="w-full p-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button
-              onClick={() => {
-                if (newCategory.trim()) {
-                  alert(`Category "${newCategory}" created!`);
-                  setNewCategory("");
-                  closeModal();
-                }
-              }}
+              onClick={handleCategorySubmit}
               className="bg-blue-600 text-white w-full py-2 rounded-md hover:bg-blue-700 transition"
             >
               Create Category

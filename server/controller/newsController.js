@@ -20,7 +20,7 @@ exports.createNews = async (req, res) => {
 exports.getDraftNews = async (req, res) => {
   try {
     const drafts = await News.find({ isPublished: false })
-      .populate("category")
+      .populate("category", "name")
       .sort({ createdAt: -1 });
 
     res.json(drafts);
@@ -32,16 +32,16 @@ exports.getDraftNews = async (req, res) => {
 //PUBLISH
 exports.publishNews = async (req, res) => {
   try {
-    const news = await News.findById(req.params.id);
-    if (!news) {
-      return res.status(404).json({ message: "News not found" });
-    }
+    const news = await News.findByIdAndUpdate(
+      req.params.id,
+      {
+        isPublished: true,
+        publishedAt: new Date(),
+      },
+      { new: true }
+    );
 
-    news.isPublished = true;
-    news.publishedAt = new Date();
-    await news.save();
-
-    res.json({ message: "News published" });
+    res.json({ message: "News published", news });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

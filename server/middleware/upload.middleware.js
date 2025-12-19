@@ -4,44 +4,37 @@ const path = require("path");
 // Disk Storage
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/"); // folder where files will be stored
+    cb(null, "uploads/");
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
+    const cleanName = file.originalname
+      .replace(/\s+/g, "-") // replace spaces with -
+      .replace(/[^\w.-]/g, ""); // remove special chars
+
+    cb(null, Date.now() + "-" + cleanName);
   },
 });
 
-// Allowed File Types
 const allowedTypes = [
   "image/jpeg",
   "image/png",
   "image/webp",
   "image/gif",
   "image/svg+xml",
-  "video/mp4",
-  "video/webm",
-  "video/mkv",
 ];
 
-// File Filter
 const fileFilter = (req, file, cb) => {
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(
-      new Error("Invalid file type. Only images & videos are allowed."),
-      false
-    );
+    cb(new Error("Invalid file type"), false);
   }
 };
 
-// Multer Upload Instance
 const upload = multer({
   storage,
   fileFilter,
-  limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB max 
-  },
+  limits: { fileSize: 50 * 1024 * 1024 },
 });
 
 module.exports = upload;
