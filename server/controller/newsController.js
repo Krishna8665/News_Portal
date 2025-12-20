@@ -1,9 +1,14 @@
 const News = require("../models/newsModel");
+const Category = require("../models/categoryModel");
 const paginate = require("../utils/pagination");
 
 //CREATE DRAFT
 exports.createNews = async (req, res) => {
   try {
+    const categoryObj = await Category.findById(req.body.category);
+    if (!categoryObj)
+      return res.status(400).json({ message: "Invalid category" });
+
     const news = await News.create({
       title: req.body.title,
       description: req.body.description,
@@ -17,11 +22,12 @@ exports.createNews = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 // GET DRAFT NEWS (ADMIN)
 exports.getDraftNews = async (req, res) => {
   try {
     const drafts = await News.find({ isPublished: false })
-      .populate("category", "name")
+      .populate("category", "name") // populate Nepali category name
       .sort({ createdAt: -1 });
 
     res.json(drafts);
@@ -29,18 +35,16 @@ exports.getDraftNews = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 //PUBLISH Draft-> News
 exports.publishNews = async (req, res) => {
   try {
-    const news = await News.findByIdAndUpdate(
-      req.params.id,
-      {
-        isPublished: true,
-        publishedAt: new Date(),
-      },
-      { new: true }
-    );
+    const news = await News.findById(req.params.id);
+    if (!news) return res.status(404).json({ message: "News not found" });
+
+    news.isPublished = true;
+    news.publishedAt = new Date();
+
+    await news.save();
 
     res.json({ message: "News published", news });
   } catch (error) {
@@ -71,21 +75,21 @@ exports.getPublishedNews = async (req, res) => {
 //SINGLE NEWS
 exports.getSingleNews = async (req, res) => {
   try {
+    const { slug } = req.params; // ignore year/month for query
     const news = await News.findOneAndUpdate(
-      { slug: req.params.slug, isPublished: true },
+      { slug, isPublished: true },
       { $inc: { views: 1 } },
       { new: true }
     ).populate("category");
 
-    if (!news) {
-      return res.status(404).json({ message: "News not found" });
-    }
-
+    if (!news) return res.status(404).json({ message: "News not found" });
     res.json(news);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
+
 
 // DELETE NEWS
 exports.deleteNews = async (req, res) => {

@@ -5,17 +5,20 @@ const newsSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     description: { type: String },
-    category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+    },
     image: { type: String },
     slug: { type: String, unique: true },
     isPublished: { type: Boolean, default: false },
-    publishedAt: Date,
     views: { type: Number, default: 0 },
+    publishedAt: Date,
   },
   { timestamps: true }
 );
 
-// Generate slug automatically in English
 newsSchema.pre("save", function (next) {
   if (this.isModified("title")) {
     this.slug = transSlugify(this.title).toLowerCase();
@@ -23,6 +26,7 @@ newsSchema.pre("save", function (next) {
   if (this.isPublished && !this.publishedAt) {
     this.publishedAt = new Date();
   }
+  next();
 });
 
 module.exports = mongoose.model("News", newsSchema);

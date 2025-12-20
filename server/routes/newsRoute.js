@@ -20,8 +20,8 @@ router.get("/drafts", auth, admin, getDraftNews);
 router.get("/news/:year/:month/:slug", getSingleNews);
 router.post("/", auth, admin, upload.single("image"), createNews);
 router.patch("/:id/publish", auth, admin, publishNews);
-router.patch("/trending", auth, admin, getTrendingNews);
-router.patch("/getNewsByCategory", auth, admin, getNewsByCategory);
+router.get("/trending", getTrendingNews);
+router.get("/getNewsByCategory", getNewsByCategory);
 // routes/newsRoute.js
 
 // Add DELETE endpoint

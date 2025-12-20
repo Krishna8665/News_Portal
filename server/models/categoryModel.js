@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const slugify = require("slugify");
+const { slugify: transSlugify } = require("transliteration");
 
 const categorySchema = new mongoose.Schema(
   {
@@ -11,7 +11,8 @@ const categorySchema = new mongoose.Schema(
 
 categorySchema.pre("save", async function () {
   if (this.isModified("name")) {
-    this.slug = slugify(this.name, { lower: true });
+    this.slug =
+      transSlugify(this.name).toLowerCase() || `category-${Date.now()}`;
   }
 });
 
