@@ -10,6 +10,7 @@ const newsSchema = new mongoose.Schema(
     slug: { type: String, unique: true },
     isPublished: { type: Boolean, default: false },
     publishedAt: Date,
+    views: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
@@ -18,6 +19,9 @@ const newsSchema = new mongoose.Schema(
 newsSchema.pre("save", function (next) {
   if (this.isModified("title")) {
     this.slug = transSlugify(this.title).toLowerCase();
+  }
+  if (this.isPublished && !this.publishedAt) {
+    this.publishedAt = new Date();
   }
 });
 
