@@ -89,8 +89,6 @@ exports.getSingleNews = async (req, res) => {
   }
 };
 
-
-
 // DELETE NEWS
 exports.deleteNews = async (req, res) => {
   try {
@@ -132,19 +130,28 @@ exports.getTrendingNews = async (req, res) => {
 //get news by category
 exports.getNewsByCategory = async (req, res) => {
   try {
+    const categoryId = req.query.categoryId; // use query param
+    if (!categoryId) {
+      return res.status(400).json({ message: "categoryId is required" });
+    }
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 6;
+
     const result = await paginate(
       News,
-      { isPublished: true, category: req.params.categoryId },
+      { isPublished: true, category: categoryId },
       {
-        page: req.query.page,
-        limit: req.query.limit,
+        page,
+        limit,
         sort: { publishedAt: -1 },
-        populate: "category",
+        populate: "category", // only field name
       }
     );
 
     res.json(result);
   } catch (err) {
+    console.error("Error in getNewsByCategory:", err.message);
     res.status(500).json({ message: err.message });
   }
 };

@@ -26,7 +26,6 @@ newsSchema.pre("save", function (next) {
   if (this.isPublished && !this.publishedAt) {
     this.publishedAt = new Date();
   }
-  next();
 });
 
 module.exports = mongoose.model("News", newsSchema);

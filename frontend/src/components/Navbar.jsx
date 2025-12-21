@@ -1,29 +1,41 @@
 import React, { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function Navbar({ api }) {
   const [categories, setCategories] = useState([]);
-  const [activeCategory, setActiveCategory] = useState("सबै");
+  const [activeCategory, setActiveCategory] = useState("sabai"); // store slug
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const res = await axios.get(`${api}/categories`);
-        setCategories(res.data);
+        setCategories(res.data || []);
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching categories:", err.message);
       }
     };
     fetchCategories();
   }, [api]);
 
-  const handleCategoryClick = (category) => {
-    setActiveCategory(category);
-    if (category === "सबै") navigate("/");
-    else navigate(`/category/${category}`);
+  // Update active category based on URL
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.startsWith("/category/")) {
+      const slug = path.split("/category/")[1];
+      setActiveCategory(slug);
+    } else {
+      setActiveCategory("sabai");
+    }
+  }, [location]);
+
+  const handleCategoryClick = (categoryObj) => {
+    setActiveCategory(categoryObj.slug);
+    if (categoryObj.slug === "sabai") navigate("/");
+    else navigate(`/category/${categoryObj.slug}`);
   };
 
   return (
@@ -33,11 +45,10 @@ export default function Navbar({ api }) {
           className="flex items-center cursor-pointer"
           onClick={() => navigate("/")}
         >
-          {/* Small logo image */}
           <img
             src="https://merosathitv.com/wp-content/uploads/2025/11/1010-1.png"
-            alt="Merosathi Logo"
-            className="w-8 h-8 mr-2" // adjust size as needed
+            alt="Logo"
+            className="w-8 h-8 mr-2"
           />
           <span className="text-xl font-bold text-red-600">
             Merosathi समाचार
@@ -55,17 +66,29 @@ export default function Navbar({ api }) {
 
       <nav className="border-t border-gray-100 bg-white">
         <div className="max-w-7xl mx-auto px-4 flex gap-4 overflow-x-auto py-2">
-          {["सबै", ...categories.map((c) => c.name)].map((cat) => (
+          <button
+            key="sabai"
+            className={`whitespace-nowrap py-2 px-4 rounded-full font-medium ${
+              activeCategory === "sabai"
+                ? "bg-red-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+            onClick={() => handleCategoryClick({ name: "सबै", slug: "sabai" })}
+          >
+            सबै
+          </button>
+
+          {categories.map((c) => (
             <button
-              key={cat}
+              key={c._id}
               className={`whitespace-nowrap py-2 px-4 rounded-full font-medium ${
-                activeCategory === cat
+                activeCategory === c.slug
                   ? "bg-red-600 text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
-              onClick={() => handleCategoryClick(cat)}
+              onClick={() => handleCategoryClick(c)}
             >
-              {cat}
+              {c.name}
             </button>
           ))}
         </div>
