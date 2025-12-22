@@ -4,6 +4,8 @@ import axios from "axios";
 import { Clock, Flame, Layers } from "lucide-react";
 import Navbar from "../../components/Navbar";
 import NewsCard from "../../components/NewsCard";
+import Footer from "../../components/Footer";
+import CategoryBadge from "../../components/CategoryBadge";
 
 export default function SingleNews() {
   const { year, month, slug } = useParams();
@@ -42,7 +44,6 @@ export default function SingleNews() {
     }
   };
 
-  // SAME CATEGORY (related)
   const fetchRelatedNews = async (categoryId) => {
     try {
       const res = await axios.get(
@@ -54,7 +55,6 @@ export default function SingleNews() {
     }
   };
 
-  // DIFFERENT CATEGORY (random)
   const fetchDifferentCategoryNews = async (currentCategoryId) => {
     try {
       const res = await axios.get(`${API}/news?limit=6`);
@@ -71,9 +71,15 @@ export default function SingleNews() {
 
   const publishedDate = new Date(news.publishedAt);
 
+  const buildNewsUrl = (n) => {
+    const date = new Date(n.publishedAt || n.createdAt);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    return `/news/news/${year}/${month}/${n.slug}`;
+  };
+
   return (
     <div className="min-h-screen bg-white">
-      {/* SAME NAVBAR AS HOME */}
       <Navbar api={API} />
 
       <main className="max-w-7xl mx-auto px-4 py-8 grid md:grid-cols-4 gap-8">
@@ -86,15 +92,23 @@ export default function SingleNews() {
             {publishedDate.toLocaleString("ne-NP")}
           </div>
 
+          {/* Category Badge */}
+          {news.category && (
+            <CategoryBadge
+              categoryName={news.category.name}
+              categorySlug={news.category.slug}
+            />
+          )}
+
           {news.image && (
             <img
               src={`${API}/uploads/${news.image}`}
               alt={news.title}
-              className="w-full h-60 object-cover rounded-lg"
+              className="w-full h-120 object-cover rounded-lg mt-3"
             />
           )}
 
-          <p className="text-gray-700 leading-7">{news.description}</p>
+          <p className="text-gray-700 leading-7 mt-3">{news.description}</p>
 
           {/* RELATED NEWS */}
           {relatedNews.length > 0 && (
@@ -125,18 +139,23 @@ export default function SingleNews() {
         </article>
 
         {/* SIDEBAR */}
-        <aside className="md:col-span-1">
-          <h2 className="flex items-center gap-2 text-xl font-bold mb-4">
-            <Flame className="w-5 h-5 text-red-600" />
-            ट्रेन्डिङ
-          </h2>
-          <div className="space-y-4">
-            {trendingNews.map((t) => (
-              <NewsCard key={t._id} news={t} api={API} />
-            ))}
+        <aside className="md:col-span-1 space-y-8">
+          {/* TRENDING */}
+          <div className="bg-white rounded-xl shadow p-4">
+            <div className="flex items-center gap-2 font-bold text-lg mb-4">
+              <Flame className="w-5 h-5 text-red-600" />
+              ट्रेन्डिङ
+            </div>
+            <div className="space-y-4">
+              {trendingNews.map((t) => (
+                <NewsCard key={t._id} news={t} api={API} />
+              ))}
+            </div>
           </div>
         </aside>
       </main>
+
+      <Footer />
     </div>
   );
 }
