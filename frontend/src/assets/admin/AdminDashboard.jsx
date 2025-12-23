@@ -19,7 +19,7 @@ const AdminDashboard = () => {
   const [categories, setCategories] = useState([]);
 
   const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState(""); // "news" or "category"
+  const [modalType, setModalType] = useState("");
   const [formData, setFormData] = useState({
     _id: "",
     title: "",
@@ -28,9 +28,7 @@ const AdminDashboard = () => {
     image: null,
   });
 
-  const [loading, setLoading] = useState(false);
-
-  // Set default axios token if present
+  // 🔐 Token
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -38,49 +36,42 @@ const AdminDashboard = () => {
     }
   }, []);
 
-  // Fetch all data from backend
-  const fetchData = async () => {
+  // 📥 Initial fetch only ONCE
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
+
+  const fetchInitialData = async () => {
     try {
-      setLoading(true);
+      const [newsRes, draftsRes, catRes] = await Promise.all([
+        axios.get("http://localhost:3000/news"),
+        axios.get("http://localhost:3000/news/drafts"),
+        axios.get("http://localhost:3000/categories"),
+      ]);
 
-      const newsRes = await axios.get("http://localhost:3000/news");
-      setNews(newsRes.data);
-
-      const draftsRes = await axios.get("http://localhost:3000/news/drafts", {
-        withCredentials: true,
-      });
-      setDrafts(draftsRes.data);
-
-      const catRes = await axios.get("http://localhost:3000/categories");
-      setCategories(catRes.data);
-    } catch (error) {
-      console.error("Failed to fetch data:", error);
+      setNews(newsRes.data || []);
+      setDrafts(draftsRes.data || []);
+      setCategories(catRes.data || []);
+    } catch {
       toast.error("Failed to load data");
-    } finally {
-      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  // Open modal
+  // 🧩 Modal handlers
   const openModalHandler = (type, data = null) => {
     setModalType(type);
     setShowModal(true);
-    if (data) setFormData(data);
-    else
-      setFormData({
+    setFormData(
+      data || {
         _id: "",
         title: "",
         description: "",
         category: "",
         image: null,
-      });
+      }
+    );
   };
 
-  // Close modal
   const closeModalHandler = () => {
     setShowModal(false);
     setFormData({
@@ -92,47 +83,47 @@ const AdminDashboard = () => {
     });
   };
 
-  // Delete item (news or category)
+  // ❌ DELETE (no refresh)
   const handleDelete = async (id, type) => {
-    if (!window.confirm("Are you sure you want to delete this item?")) return;
+    if (!window.confirm("Are you sure?")) return;
 
     try {
-      if (type === "news" || type === "draft") {
-        await axios.delete(`http://localhost:3000/news/${id}`, {
-          withCredentials: true,
-        });
-        toast.success("News deleted successfully!");
-        fetchData();
-      } else if (type === "category") {
-        await axios.delete(`http://localhost:3000/categories/${id}`, {
-          withCredentials: true,
-        });
-        toast.success("Category deleted successfully!");
-        fetchData();
+      await axios.delete(`http://localhost:3000/news/${id}`);
+
+      if (type === "draft") {
+        setDrafts((prev) => prev.filter((n) => n._id !== id));
       }
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to delete");
+
+      if (type === "news") {
+        setNews((prev) => prev.filter((n) => n._id !== id));
+      }
+
+      toast.success("Deleted successfully");
+    } catch {
+      toast.error("Delete failed");
     }
   };
 
-  // Publish news
+  // 🚀 PUBLISH (NO REFRESH)
   const handlePublish = async (id) => {
+    if (!window.confirm("Publish this news?")) return;
+
     try {
-      await axios.patch(
-        `http://localhost:3000/news/${id}/publish`,
-        {},
-        { withCredentials: true }
-      );
-      toast.success("News published successfully!");
-      fetchData();
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to publish");
+      const res = await axios.patch(`http://localhost:3000/news/${id}/publish`);
+
+      const publishedNews = res.data;
+
+      // 1️⃣ remove from drafts
+      setDrafts((prev) => prev.filter((n) => n._id !== id));
+
+      // 2️⃣ add to published
+      setNews((prev) => [publishedNews, ...prev]);
+
+      toast.success("News published 🚀");
+    } catch {
+      toast.error("Publish failed");
     }
   };
-
-  if (loading) return <p>Loading...</p>;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -141,8 +132,8 @@ const AdminDashboard = () => {
       <div className="flex flex-1">
         <Sidebar
           sidebarOpen={sidebarOpen}
-          setActiveTab={setActiveTab}
           activeTab={activeTab}
+          setActiveTab={setActiveTab}
           setSidebarOpen={setSidebarOpen}
         />
 
@@ -152,8 +143,9 @@ const AdminDashboard = () => {
           {activeTab === "drafts" && (
             <Drafts
               drafts={drafts}
-              openModal={(data) => openModalHandler("news", data)}
+              onEdit={(data) => openModalHandler("news", data)}
               onDelete={(id) => handleDelete(id, "draft")}
+              onPublish={handlePublish}
             />
           )}
 
@@ -162,7 +154,6 @@ const AdminDashboard = () => {
               news={news}
               onEdit={(data) => openModalHandler("news", data)}
               onDelete={(id) => handleDelete(id, "news")}
-              onPublish={handlePublish}
             />
           )}
 
@@ -170,7 +161,9 @@ const AdminDashboard = () => {
             <Categories
               categories={categories}
               openModal={() => openModalHandler("category")}
-              onDelete={(id) => handleDelete(id, "category")}
+              onDelete={(id) =>
+                setCategories((prev) => prev.filter((c) => c._id !== id))
+              }
             />
           )}
         </main>
@@ -182,7 +175,7 @@ const AdminDashboard = () => {
           formData={formData}
           setFormData={setFormData}
           closeModal={closeModalHandler}
-          onSuccess={fetchData} // Refresh list after create/edit
+          onSuccess={fetchInitialData}
         />
       )}
 

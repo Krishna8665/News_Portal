@@ -46,7 +46,7 @@ exports.publishNews = async (req, res) => {
 
     await news.save();
 
-    res.json({ message: "News published", news });
+    res.json(news);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
