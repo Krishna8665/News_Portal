@@ -145,7 +145,7 @@ exports.getNewsByCategory = async (req, res) => {
         page,
         limit,
         sort: { publishedAt: -1 },
-        populate: "category", // only field name
+        populate: "category", 
       }
     );
 
