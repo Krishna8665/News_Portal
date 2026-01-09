@@ -11,7 +11,7 @@ const {
 router.get("/", getCategories);
 
 router.post("/", authMiddleware, adminMiddleware, createCategory);
-router.put("/:id", authMiddleware, adminMiddleware, updateCategory); // Update category by ID
-router.delete("/:id", authMiddleware, adminMiddleware, deleteCategory); // Delete category by ID
+router.put("/:id", authMiddleware, adminMiddleware, updateCategory);
+router.delete("/:id", authMiddleware, adminMiddleware, deleteCategory);
 
 module.exports = router;
