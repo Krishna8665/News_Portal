@@ -75,7 +75,7 @@ exports.getPublishedNews = async (req, res) => {
 //SINGLE NEWS
 exports.getSingleNews = async (req, res) => {
   try {
-    const { slug } = req.params; // ignore year/month for query
+    const { slug } = req.params; 
     const news = await News.findOneAndUpdate(
       { slug, isPublished: true },
       { $inc: { views: 1 } },
