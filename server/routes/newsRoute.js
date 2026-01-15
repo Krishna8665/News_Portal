@@ -22,7 +22,6 @@ router.post("/", auth, admin, upload.single("image"), createNews);
 router.patch("/:id/publish", auth, admin, publishNews);
 router.get("/trending", getTrendingNews);
 router.get("/getNewsByCategory", getNewsByCategory);
-// routes/newsRoute.js
 
 // Add DELETE endpoint
 router.delete("/:id", auth, admin, deleteNews);

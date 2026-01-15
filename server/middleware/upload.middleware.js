@@ -8,7 +8,7 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const cleanName = file.originalname
-      .replace(/\s+/g, "-") // replace spaces with -
+      .replace(/\s+/g, "-") // replace spaces with 
       .replace(/[^\w.-]/g, ""); // remove special chars
 
     cb(null, Date.now() + "-" + cleanName);
